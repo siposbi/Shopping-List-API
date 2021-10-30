@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using SharedShoppingList.data.Dto;
+using SharedShoppingList.Data.Dto;
 using SharedShoppingList.Data.Entities;
 
-namespace SharedShoppingList.data.Mapping
+namespace SharedShoppingList.Data.Mapping
 {
     public class MapperProfile : Profile
     {

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SharedShoppingList.Data.Entities;
 
-namespace SharedShoppingList.data
+namespace SharedShoppingList.Data
 {
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]

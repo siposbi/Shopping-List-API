@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SharedShoppingList.data.Dto
+namespace SharedShoppingList.Data.Dto
 {
     public class ProductCreateDto
     {

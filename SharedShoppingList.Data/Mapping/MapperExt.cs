@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
-namespace SharedShoppingList.data.Mapping
+namespace SharedShoppingList.Data.Mapping
 {
     public static class MapperExt
     {

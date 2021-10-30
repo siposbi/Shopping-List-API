@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedShoppingList.Api", "SharedShoppingList.Api\SharedShoppingList.Api.csproj", "{E33D03C5-C0A1-4E6C-A6D7-8CD2C0730A72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedShoppingList.Data", "SharedShoppingList.data\SharedShoppingList.Data.csproj", "{0D16E63F-68E7-4A68-9F8D-F893F91A550F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedShoppingList.Data", "SharedShoppingList.Data\SharedShoppingList.Data.csproj", "{0D16E63F-68E7-4A68-9F8D-F893F91A550F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

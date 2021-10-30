@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedShoppingList.Api.Extensions;
-using SharedShoppingList.data.Dto;
+using SharedShoppingList.Data.Dto;
 using SharedShoppingList.Data.Models;
 using SharedShoppingList.Data.Services;
 
