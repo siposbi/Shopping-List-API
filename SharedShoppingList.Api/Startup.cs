@@ -7,8 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using SharedShoppingList.data;
-using SharedShoppingList.data.Mapping;
+using SharedShoppingList.Data;
+using SharedShoppingList.Data.Mapping;
 
 namespace SharedShoppingList.Api
 {

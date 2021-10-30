@@ -1,7 +1,7 @@
 ﻿using System;
 using SharedShoppingList.Data.Entities;
 
-namespace SharedShoppingList.data.Dto
+namespace SharedShoppingList.Data.Dto
 {
     public class ShoppingListDto
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SharedShoppingList.data;
+using SharedShoppingList.Data;
 using SharedShoppingList.Data.Entities;
 using SharedShoppingList.Data.Extensions;
 

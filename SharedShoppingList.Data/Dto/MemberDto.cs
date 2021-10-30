@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SharedShoppingList.data.Dto
+namespace SharedShoppingList.Data.Dto
 {
     public class MemberDto
     {

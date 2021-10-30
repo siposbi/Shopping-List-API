@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using SharedShoppingList.data;
-using SharedShoppingList.data.Dto;
+using SharedShoppingList.Data;
+using SharedShoppingList.Data.Dto;
 using SharedShoppingList.Data.Entities;
 using SharedShoppingList.Data.Extensions;
-using SharedShoppingList.data.Mapping;
+using SharedShoppingList.Data.Mapping;
 using SharedShoppingList.Data.Models;
 
 namespace SharedShoppingList.Data.Services

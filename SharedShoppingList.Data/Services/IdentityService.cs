@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using SharedShoppingList.data;
+using SharedShoppingList.Data;
 using SharedShoppingList.Data.Entities;
 using SharedShoppingList.Data.Models;
 

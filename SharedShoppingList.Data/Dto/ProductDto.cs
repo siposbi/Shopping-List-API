@@ -1,4 +1,4 @@
-﻿namespace SharedShoppingList.data.Dto
+﻿namespace SharedShoppingList.Data.Dto
 {
     public class ProductDto
     {

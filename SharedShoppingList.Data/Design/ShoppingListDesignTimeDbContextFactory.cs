@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Logging;
-using SharedShoppingList.data;
+using SharedShoppingList.Data;
 
 namespace SharedShoppingList.Data.Design
 {
