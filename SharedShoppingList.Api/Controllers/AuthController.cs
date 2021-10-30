@@ -16,6 +16,12 @@ namespace SharedShoppingList.Api.Controllers
             _identityService = identityService;
         }
 
+        [HttpGet("test")]
+        public IActionResult Test()
+        {
+            return Ok("HELLO");
+        }
+
         [HttpPost("login")]
         public async Task<ActionResult<ResponseModel<TokenModel>>> LoginAsync([FromBody] LoginModel loginModel)
         {
