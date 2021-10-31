@@ -9,7 +9,7 @@ namespace SharedShoppingList.Api
 {
     public static class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
             
