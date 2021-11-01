@@ -219,7 +219,7 @@ namespace SharedShoppingList.Data.Services
             storedRefreshToken.Used = true;
             _context.RefreshTokens.Update(storedRefreshToken);
             await _context.SaveChangesAsync();
-            var strUserId = validatedToken.Claims.Single(x => x.Type == "UserId").Value;
+            var strUserId = validatedToken.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
             long.TryParse(strUserId, out var userId);
             var user = await _context.Users.SingleOrDefaultAsync(c => c.Id == userId);
             if (user == null)
