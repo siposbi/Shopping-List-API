@@ -61,7 +61,7 @@ namespace SharedShoppingList.Api.Controllers
             return BadRequest(result);
         }
 
-        [HttpPut("leave/{listId:int}")]
+        [HttpPut("leave/{listId:long}")]
         public async Task<ActionResult<ResponseModel<bool>>> Leave([FromRoute] long listId)
         {
             var result = await _shoppingListService.Leave(User.GetId(), listId);
@@ -73,7 +73,7 @@ namespace SharedShoppingList.Api.Controllers
             return BadRequest(result);
         }
 
-        [HttpPut("rename/{listId:int}")]
+        [HttpPut("rename/{listId:long}")]
         public async Task<ActionResult<ResponseModel<ShoppingListDto>>> Rename([FromRoute] int listId,
             [FromBody] string newName)
         {
@@ -89,7 +89,7 @@ namespace SharedShoppingList.Api.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("getMembers/{listId:int}")]
+        [HttpGet("getMembers/{listId:long}")]
         public async Task<ActionResult<ResponseModel<IEnumerable<MemberDto>>>> GetMembersOfList([FromRoute] int listId)
         {
             if (!await _userService.UserIsMemberOfList(listId, User.GetId()))
@@ -104,7 +104,7 @@ namespace SharedShoppingList.Api.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("getExport/{listId:int}")]
+        [HttpGet("getExport/{listId:long}")]
         public async Task<ActionResult<ResponseModel<IEnumerable<ExportDto>>>> GetMembersOfList([FromRoute] int listId,
             [FromQuery, Required] DateTime startDate, [FromQuery, Required] DateTime endDatetime)
         {

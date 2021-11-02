@@ -16,15 +16,16 @@ namespace SharedShoppingList.Data.Services
 {
     public interface IProductService
     {
-        Task<ResponseModel<ProductDto>> Create(long userId, ProductCreateDto productDto);
-        Task<ResponseModel<IEnumerable<ProductDto>>> GetEveryProductForList(long listId);
+        Task<ResponseModel<ProductMinDto>> Create(long userId, ProductCreateModel productModel);
+        Task<ResponseModel<IEnumerable<ProductMinDto>>> GetEveryProductForList(long listId);
         Task<ResponseModel<bool>> Delete(long productId);
-        Task<ResponseModel<ProductDto>> UndoDelete(long productId);
-        Task<ResponseModel<ProductDto>> Buy(long userId, long productId);
-        Task<ResponseModel<ProductDto>> UndoBuy(long userId, long productId);
+        Task<ResponseModel<ProductMinDto>> UndoDelete(long productId);
+        Task<ResponseModel<ProductMinDto>> Buy(long userId, long productId);
+        Task<ResponseModel<ProductMinDto>> UndoBuy(long userId, long productId);
         Task<long?> GetListIdForProduct(long productId);
-        Task<ResponseModel<ProductDto>> Update(long productId, ProductCreateDto productDto);
+        Task<ResponseModel<ProductMinDto>> Update(long productId, ProductUpdateModel productModel);
         Task<long> GetAddedByUserId(long productId);
+        Task<ResponseModel<ProductDto>> Get(long id);
     }
 
     public class ProductService : IProductService
@@ -43,9 +44,9 @@ namespace SharedShoppingList.Data.Services
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
 
-        public async Task<ResponseModel<ProductDto>> Create(long userId, ProductCreateDto productDto)
+        public async Task<ResponseModel<ProductMinDto>> Create(long userId, ProductCreateModel productModel)
         {
-            var response = new ResponseModel<ProductDto>();
+            var response = new ResponseModel<ProductMinDto>();
             try
             {
                 var user = await _userService.GetActiveUser(userId);
@@ -54,13 +55,13 @@ namespace SharedShoppingList.Data.Services
                     return response.Unsuccessful("User not found.");
                 }
 
-                var shoppingList = await _commonService.GetActiveShoppingList(productDto.ShoppingListId);
+                var shoppingList = await _commonService.GetActiveShoppingList(productModel.ShoppingListId);
                 if (shoppingList == null)
                 {
                     return response.Unsuccessful("Shopping List not found.");
                 }
 
-                if (productDto.Price <= 0)
+                if (productModel.Price <= 0)
                 {
                     return response.Unsuccessful("Product price can not be less than 0.");
                 }
@@ -69,9 +70,9 @@ namespace SharedShoppingList.Data.Services
                 {
                     AddedByUser = user,
                     CreatedDateTime = DateTime.Now,
-                    Name = productDto.Name,
-                    Price = productDto.Price,
-                    IsShared = productDto.IsShared,
+                    Name = productModel.Name,
+                    Price = productModel.Price,
+                    IsShared = productModel.IsShared,
                     ShoppingList = shoppingList
                 };
 
@@ -79,7 +80,7 @@ namespace SharedShoppingList.Data.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = _mapper.Map<ProductDto>(newProduct);
+                response.Data = await _mapper.ProjectToAsync<Product, ProductMinDto>(_dbContext.Products, newProduct);
                 return response;
             }
             catch (Exception)
@@ -88,9 +89,9 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        public async Task<ResponseModel<IEnumerable<ProductDto>>> GetEveryProductForList(long listId)
+        public async Task<ResponseModel<IEnumerable<ProductMinDto>>> GetEveryProductForList(long listId)
         {
-            var response = new ResponseModel<IEnumerable<ProductDto>>();
+            var response = new ResponseModel<IEnumerable<ProductMinDto>>();
             try
             {
                 var shoppingList = await _commonService.GetActiveShoppingList(listId);
@@ -101,7 +102,7 @@ namespace SharedShoppingList.Data.Services
 
                 var products = await _dbContext.Products.Active().Where(p => p.ShoppingList == shoppingList)
                     .OrderByDescending(p => p.CreatedDateTime)
-                    .ProjectTo<ProductDto>(_mapper.ConfigurationProvider)
+                    .ProjectTo<ProductMinDto>(_mapper.ConfigurationProvider)
                     .ToListAsync();
                 response.Data = products;
                 return response;
@@ -140,9 +141,9 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        public async Task<ResponseModel<ProductDto>> UndoDelete(long productId)
+        public async Task<ResponseModel<ProductMinDto>> UndoDelete(long productId)
         {
-            var response = new ResponseModel<ProductDto>();
+            var response = new ResponseModel<ProductMinDto>();
             try
             {
                 var product = await _dbContext.Products.SingleOrDefaultAsync(p => p.Id == productId);
@@ -154,7 +155,7 @@ namespace SharedShoppingList.Data.Services
                 product.IsActive = true;
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = _mapper.Map<ProductDto>(product);
+                response.Data = _mapper.Map<ProductMinDto>(product);
                 return response;
             }
             catch (Exception)
@@ -163,9 +164,9 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        public async Task<ResponseModel<ProductDto>> Buy(long userId, long productId)
+        public async Task<ResponseModel<ProductMinDto>> Buy(long userId, long productId)
         {
-            var response = new ResponseModel<ProductDto>();
+            var response = new ResponseModel<ProductMinDto>();
             try
             {
                 var user = await _userService.GetActiveUser(userId);
@@ -189,7 +190,7 @@ namespace SharedShoppingList.Data.Services
                 product.BoughtDateTime = DateTime.Now;
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = _mapper.Map<ProductDto>(product);
+                response.Data = _mapper.Map<ProductMinDto>(product);
                 return response;
             }
             catch (Exception)
@@ -198,9 +199,9 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        public async Task<ResponseModel<ProductDto>> UndoBuy(long userId, long productId)
+        public async Task<ResponseModel<ProductMinDto>> UndoBuy(long userId, long productId)
         {
-            var response = new ResponseModel<ProductDto>();
+            var response = new ResponseModel<ProductMinDto>();
             try
             {
                 var user = await _userService.GetActiveUser(userId);
@@ -224,7 +225,7 @@ namespace SharedShoppingList.Data.Services
                 product.BoughtDateTime = null;
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = _mapper.Map<ProductDto>(product);
+                response.Data = await _mapper.ProjectToAsync<Product, ProductMinDto>(_dbContext.Products, product);
                 return response;
             }
             catch (Exception)
@@ -233,6 +234,7 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
+
         public async Task<long?> GetListIdForProduct(long productId)
         {
             var id = await _dbContext.Products.Where(p => p.Id == productId)
@@ -240,9 +242,9 @@ namespace SharedShoppingList.Data.Services
             return id == 0 ? null : id;
         }
 
-        public async Task<ResponseModel<ProductDto>> Update(long productId, ProductCreateDto productDto)
+        public async Task<ResponseModel<ProductMinDto>> Update(long productId, ProductUpdateModel productModel)
         {
-            var response = new ResponseModel<ProductDto>();
+            var response = new ResponseModel<ProductMinDto>();
             try
             {
                 var product = await GetActiveProduct(productId);
@@ -256,11 +258,31 @@ namespace SharedShoppingList.Data.Services
                     return response.Unsuccessful("Can't update a product that had already been bought.");
                 }
 
-                product.Name = productDto.Name;
-                product.Price = productDto.Price;
-                product.IsShared = productDto.IsShared;
+                product.Name = productModel.Name;
+                product.Price = productModel.Price;
+                product.IsShared = productModel.IsShared;
 
                 await _dbContext.SaveChangesAsync();
+
+                response.Data = await _mapper.ProjectToAsync<Product, ProductMinDto>(_dbContext.Products, product);
+                return response;
+            }
+            catch (Exception)
+            {
+                return response.Exception();
+            }
+        }
+
+        public async Task<ResponseModel<ProductDto>> Get(long id)
+        {
+            var response = new ResponseModel<ProductDto>();
+            try
+            {
+                var product = await GetActiveProduct(id);
+                if (product == null)
+                {
+                    return response.Unsuccessful("Product not found.");
+                }
 
                 response.Data = await _mapper.ProjectToAsync<Product, ProductDto>(_dbContext.Products, product);
                 return response;
