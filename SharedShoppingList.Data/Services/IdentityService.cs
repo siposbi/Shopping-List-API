@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -43,11 +44,14 @@ namespace SharedShoppingList.Data.Services
             var response = new ResponseModel<TokenModel>();
             try
             {
-                var loginUser =
-                    await _context.Users.SingleOrDefaultAsync(
-                        c => c.Email == login.Email && c.Password == login.Password);
+                var loginUser = await _context.Users.SingleOrDefaultAsync(c => c.Email == login.Email);
 
                 if (loginUser == null)
+                {
+                    return response.Unsuccessful("Invalid Username or Password.");
+                }
+
+                if (!Crypto.VerifyHashedPassword(loginUser.Password, login.Password))
                 {
                     return response.Unsuccessful("Invalid Username or Password.");
                 }
@@ -83,7 +87,7 @@ namespace SharedShoppingList.Data.Services
 
                 var user = new User
                 {
-                    Password = registerModel.Password,
+                    Password = Crypto.HashPassword(registerModel.Password),
                     Email = registerModel.Email,
                     FirstName = registerModel.FirstName,
                     LastName = registerModel.LastName
