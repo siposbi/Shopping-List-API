@@ -32,35 +32,27 @@ namespace SharedShoppingList.Api.Controllers
                 var response = new ResponseModel<bool>().Unsuccessful("Product does not exist.");
                 return BadRequest(response);
             }
-            
+
             if (!await _userService.UserIsMemberOfList(listId.Value, User.GetId()))
                 return Unauthorized("User is not part of list, so can't get products of it.");
-            
+
             var result = await _productService.Get(id);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult<ResponseModel<ProductMinDto>>> CreateProduct([FromBody] ProductCreateModel productModel)
+        public async Task<ActionResult<ResponseModel<ProductMinDto>>> CreateProduct(
+            [FromBody] ProductCreateModel productModel)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             if (!await _userService.UserIsMemberOfList(productModel.ShoppingListId, User.GetId()))
                 return Unauthorized("User is not part of list, so can't add product to it.");
 
             var result = await _productService.Create(User.GetId(), productModel);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -73,10 +65,7 @@ namespace SharedShoppingList.Api.Controllers
                 return Unauthorized("User is not part of list.");
 
             var result = await _productService.GetEveryProductForList(listId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -90,19 +79,18 @@ namespace SharedShoppingList.Api.Controllers
                 var response = new ResponseModel<bool>().Unsuccessful("Product does not exist.");
                 return BadRequest(response);
             }
+
             if (!await _userService.UserIsMemberOfList(listId.Value, User.GetId()))
                 return Unauthorized("User is not part of list.");
             if (User.GetId() != await _productService.GetAddedByUserId(productId))
             {
-                var response = new ResponseModel<bool>().Unsuccessful("You cant delete a product added by someone else.");
+                var response =
+                    new ResponseModel<bool>().Unsuccessful("You cant delete a product added by someone else.");
                 return BadRequest(response);
             }
 
             var result = await _productService.Delete(productId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -116,14 +104,12 @@ namespace SharedShoppingList.Api.Controllers
                 var response = new ResponseModel<bool>().Unsuccessful("Product does not exist.");
                 return BadRequest(response);
             }
+
             if (!await _userService.UserIsMemberOfList(listId.Value, User.GetId()))
                 return Unauthorized("User is not part of list.");
 
             var result = await _productService.UndoDelete(productId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -132,10 +118,7 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<ProductMinDto>>> Buy([FromRoute] long productId)
         {
             var result = await _productService.Buy(User.GetId(), productId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -144,35 +127,28 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<ProductMinDto>>> UndoBuy([FromRoute] long productId)
         {
             var result = await _productService.UndoBuy(User.GetId(), productId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
 
         [HttpPut("update/{productId:long}")]
-        public async Task<ActionResult<ResponseModel<ProductMinDto>>> Update([FromRoute] long productId, [FromBody] ProductUpdateModel productModel)
+        public async Task<ActionResult<ResponseModel<ProductMinDto>>> Update([FromRoute] long productId,
+            [FromBody] ProductUpdateModel productModel)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var listId = await _productService.GetListIdForProduct(productId);
             if (listId == null)
             {
                 var response = new ResponseModel<bool>().Unsuccessful("Product does not exist.");
                 return BadRequest(response);
             }
+
             if (!await _userService.UserIsMemberOfList(listId.Value, User.GetId()))
                 return Unauthorized("User is not part of list.");
             var result = await _productService.Update(productId, productModel);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }

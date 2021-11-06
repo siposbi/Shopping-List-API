@@ -1,5 +1,4 @@
 ﻿using System;
-using SharedShoppingList.Data.Entities;
 
 namespace SharedShoppingList.Data.Dto
 {

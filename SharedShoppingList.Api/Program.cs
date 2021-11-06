@@ -12,7 +12,7 @@ namespace SharedShoppingList.Api
         public static async Task Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            
+
             var scope = host.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ShoppingListDbContext>();
             await context.Database.MigrateAsync();
@@ -20,11 +20,10 @@ namespace SharedShoppingList.Api
             await host.RunAsync();
         }
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+        private static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+        }
     }
 }

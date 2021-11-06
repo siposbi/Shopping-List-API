@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using SharedShoppingList.Data;
 using SharedShoppingList.Data.Dto;
 using SharedShoppingList.Data.Entities;
 using SharedShoppingList.Data.Extensions;
@@ -30,6 +29,12 @@ namespace SharedShoppingList.Data.Services
 
     public class ProductService : IProductService
     {
+        private readonly ICommonService _commonService;
+
+        private readonly ShoppingListDbContext _dbContext;
+        private readonly IMapper _mapper;
+        private readonly IUserService _userService;
+
         public ProductService(ShoppingListDbContext dbContext, ICommonService commonService, IUserService userService,
             IMapper mapper)
         {
@@ -39,32 +44,18 @@ namespace SharedShoppingList.Data.Services
             _mapper = mapper;
         }
 
-        private readonly ShoppingListDbContext _dbContext;
-        private readonly ICommonService _commonService;
-        private readonly IUserService _userService;
-        private readonly IMapper _mapper;
-
         public async Task<ResponseModel<ProductMinDto>> Create(long userId, ProductCreateModel productModel)
         {
             var response = new ResponseModel<ProductMinDto>();
             try
             {
                 var user = await _userService.GetActiveUser(userId);
-                if (user == null)
-                {
-                    return response.Unsuccessful("User not found.");
-                }
+                if (user == null) return response.Unsuccessful("User not found.");
 
                 var shoppingList = await _commonService.GetActiveShoppingList(productModel.ShoppingListId);
-                if (shoppingList == null)
-                {
-                    return response.Unsuccessful("Shopping List not found.");
-                }
+                if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
-                if (productModel.Price <= 0)
-                {
-                    return response.Unsuccessful("Product price can not be less than 0.");
-                }
+                if (productModel.Price <= 0) return response.Unsuccessful("Product price can not be less than 0.");
 
                 var newProduct = new Product
                 {
@@ -95,10 +86,7 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var shoppingList = await _commonService.GetActiveShoppingList(listId);
-                if (shoppingList == null)
-                {
-                    return response.Unsuccessful("Shopping List not found.");
-                }
+                if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
                 var products = await _dbContext.Products.Active().Where(p => p.ShoppingList == shoppingList)
                     .OrderByDescending(p => p.CreatedDateTime)
@@ -119,15 +107,10 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var product = await GetActiveProduct(productId);
-                if (product == null)
-                {
-                    return response.Unsuccessful("Product not found.");
-                }
+                if (product == null) return response.Unsuccessful("Product not found.");
 
                 if (await GetBoughtUserId(product.Id) != null)
-                {
                     return response.Unsuccessful("Can't delete a product that had already been bought.");
-                }
 
                 product.IsActive = false;
                 await _dbContext.SaveChangesAsync();
@@ -147,10 +130,7 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var product = await _dbContext.Products.SingleOrDefaultAsync(p => p.Id == productId);
-                if (product == null)
-                {
-                    return response.Unsuccessful("Product not found.");
-                }
+                if (product == null) return response.Unsuccessful("Product not found.");
 
                 product.IsActive = true;
                 await _dbContext.SaveChangesAsync();
@@ -170,21 +150,12 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var user = await _userService.GetActiveUser(userId);
-                if (user == null)
-                {
-                    return response.Unsuccessful("User not found.");
-                }
+                if (user == null) return response.Unsuccessful("User not found.");
 
                 var product = await GetActiveProduct(productId);
-                if (product == null)
-                {
-                    return response.Unsuccessful("Product not found.");
-                }
+                if (product == null) return response.Unsuccessful("Product not found.");
 
-                if (await GetBoughtUserId(product.Id )!= null)
-                {
-                    return response.Unsuccessful("Product already bought.");
-                }
+                if (await GetBoughtUserId(product.Id) != null) return response.Unsuccessful("Product already bought.");
 
                 product.BoughtByUser = user;
                 product.BoughtDateTime = DateTime.Now;
@@ -205,21 +176,13 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var user = await _userService.GetActiveUser(userId);
-                if (user == null)
-                {
-                    return response.Unsuccessful("User not found.");
-                }
+                if (user == null) return response.Unsuccessful("User not found.");
 
                 var product = await GetActiveProduct(productId);
-                if (product == null)
-                {
-                    return response.Unsuccessful("Product not found.");
-                }
+                if (product == null) return response.Unsuccessful("Product not found.");
 
                 if (await GetBoughtUserId(product.Id) != user.Id)
-                {
                     return response.Unsuccessful("You didn't buy this product.");
-                }
 
                 product.BoughtByUser = null;
                 product.BoughtDateTime = null;
@@ -248,15 +211,10 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var product = await GetActiveProduct(productId);
-                if (product == null)
-                {
-                    return response.Unsuccessful("Product not found.");
-                }
+                if (product == null) return response.Unsuccessful("Product not found.");
 
                 if (await GetBoughtUserId(product.Id) != null)
-                {
                     return response.Unsuccessful("Can't update a product that had already been bought.");
-                }
 
                 product.Name = productModel.Name;
                 product.Price = productModel.Price;
@@ -279,10 +237,7 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var product = await GetActiveProduct(id);
-                if (product == null)
-                {
-                    return response.Unsuccessful("Product not found.");
-                }
+                if (product == null) return response.Unsuccessful("Product not found.");
 
                 response.Data = await _mapper.ProjectToAsync<Product, ProductDto>(_dbContext.Products, product);
                 return response;
@@ -293,14 +248,14 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        private async Task<Product> GetActiveProduct(long id)
-        {
-            return await _dbContext.Products.Active().SingleOrDefaultAsync(p => p.Id == id);
-        }
-
         public async Task<long> GetAddedByUserId(long productId)
         {
             return await _dbContext.Products.Where(p => p.Id == productId).Select(p => p.AddedByUser.Id).SingleAsync();
+        }
+
+        private async Task<Product> GetActiveProduct(long id)
+        {
+            return await _dbContext.Products.Active().SingleOrDefaultAsync(p => p.Id == id);
         }
 
         private async Task<long?> GetBoughtUserId(long productId)

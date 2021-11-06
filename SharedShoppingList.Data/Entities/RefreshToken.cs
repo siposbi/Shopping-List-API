@@ -2,7 +2,7 @@
 
 namespace SharedShoppingList.Data.Entities
 {
-    public partial class RefreshToken
+    public class RefreshToken
     {
         public int RefreshTokenId { get; set; }
         public string Token { get; set; }

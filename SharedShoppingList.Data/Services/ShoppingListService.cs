@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using SharedShoppingList.Data;
 using SharedShoppingList.Data.Dto;
 using SharedShoppingList.Data.Entities;
 using SharedShoppingList.Data.Extensions;
@@ -22,12 +21,20 @@ namespace SharedShoppingList.Data.Services
         Task<ResponseModel<bool>> Leave(long userId, long shoppingListId);
         Task<ResponseModel<ShoppingListDto>> Rename(long shoppingListId, string newName);
         Task<ResponseModel<IEnumerable<MemberDto>>> GetMembers(long shoppingListId);
+
         Task<ResponseModel<IEnumerable<ExportDto>>> Export(long shoppingListId, DateTime startDateTime,
             DateTime endDateTime);
     }
 
     public class ShoppingListService : IShoppingListService
     {
+        private readonly ICommonService _commonService;
+
+        private readonly ShoppingListDbContext _dbContext;
+        private readonly IMapper _mapper;
+        private readonly Random _random;
+        private readonly IUserService _userService;
+
         public ShoppingListService(ShoppingListDbContext dbContext, ICommonService commonService,
             IUserService userService, IMapper mapper)
         {
@@ -38,34 +45,15 @@ namespace SharedShoppingList.Data.Services
             _random = new Random();
         }
 
-        private readonly ShoppingListDbContext _dbContext;
-        private readonly ICommonService _commonService;
-        private readonly Random _random;
-        private readonly IUserService _userService;
-        private readonly IMapper _mapper;
-
-        private string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[_random.Next(s.Length)]).ToArray());
-        }
-
         public async Task<ResponseModel<ShoppingListDto>> Create(long userId, string shoppingListName)
         {
             var response = new ResponseModel<ShoppingListDto>();
             try
             {
                 var user = await _userService.GetActiveUser(userId);
-                if (user == null)
-                {
-                    return response.Unsuccessful("User not found.");
-                }
+                if (user == null) return response.Unsuccessful("User not found.");
 
-                if (shoppingListName.Length > 50)
-                {
-                    return response.Unsuccessful("Name cant be more than 50 characters.");
-                }
+                if (shoppingListName.Length > 50) return response.Unsuccessful("Name cant be more than 50 characters.");
 
                 var newShoppingList = new ShoppingList
                 {
@@ -83,7 +71,9 @@ namespace SharedShoppingList.Data.Services
                 newShoppingList.ShareCode =
                     $"SSLU{userId.ToString().PadLeft(5, '0')}L{newShoppingList.Id.ToString().PadLeft(5, '0')}R{RandomString(5)}";
                 await _dbContext.SaveChangesAsync();
-                response.Data = await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists, newShoppingList);
+                response.Data =
+                    await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists,
+                        newShoppingList);
                 return response;
             }
             catch (Exception)
@@ -98,10 +88,7 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var user = await _userService.GetActiveUser(userId);
-                if (user == null)
-                {
-                    return response.Unsuccessful("User not found.");
-                }
+                if (user == null) return response.Unsuccessful("User not found.");
 
                 var shoppingLists = await _dbContext.UserShoppingLists.Active()
                     .Where(sl => sl.UserId == userId)
@@ -124,42 +111,28 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var user = await _userService.GetActiveUser(userId);
-                if (user == null)
-                {
-                    return response.Unsuccessful("User not found.");
-                }
+                if (user == null) return response.Unsuccessful("User not found.");
 
                 var shoppingList = await _dbContext.ShoppingLists.SingleOrDefaultAsync(sl => sl.ShareCode == shareCode);
-                if (shoppingList == null)
-                {
-                    return response.Unsuccessful("Shopping List not found.");
-                }
+                if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
                 if (await _userService.UserIsMemberOfList(shoppingList.Id, user.Id))
-                {
                     return response.Unsuccessful("User is already part of this list.");
-                }
 
-                if (shoppingList.IsActive == false)
-                {
-                    shoppingList.IsActive = true;
-                }
+                if (shoppingList.IsActive == false) shoppingList.IsActive = true;
 
                 var usl = await _dbContext.UserShoppingLists.SingleOrDefaultAsync(usl =>
                     usl.User == user && usl.ShoppingList == shoppingList);
                 if (usl == null)
-                {
                     await _dbContext.UserShoppingLists.AddAsync(new UserShoppingList
                         { User = user, ShoppingList = shoppingList });
-                }
                 else
-                {
                     usl.IsActive = true;
-                }
 
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists, shoppingList);
+                response.Data =
+                    await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists, shoppingList);
                 return response;
             }
             catch (Exception)
@@ -174,33 +147,21 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var user = await _userService.GetActiveUser(userId);
-                if (user == null)
-                {
-                    return response.Unsuccessful("User not found.");
-                }
+                if (user == null) return response.Unsuccessful("User not found.");
 
                 var shoppingList = await _commonService.GetActiveShoppingList(shoppingListId);
-                if (shoppingList == null)
-                {
-                    return response.Unsuccessful("Shopping List not found.");
-                }
+                if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
                 var userShoppingList = await _dbContext.UserShoppingLists.Active()
                     .SingleOrDefaultAsync(usl => usl.ShoppingList == shoppingList && usl.User == user);
-                if (userShoppingList == null)
-                {
-                    return response.Unsuccessful("User is not member of this list.");
-                }
+                if (userShoppingList == null) return response.Unsuccessful("User is not member of this list.");
 
                 userShoppingList.IsActive = false;
                 await _dbContext.SaveChangesAsync();
 
                 var isAnyoneStillOnList = _dbContext.UserShoppingLists.Active()
                     .Any(sl => sl.ShoppingListId == shoppingList.Id);
-                if (!isAnyoneStillOnList)
-                {
-                    shoppingList.IsActive = false;
-                }
+                if (!isAnyoneStillOnList) shoppingList.IsActive = false;
 
                 await _dbContext.SaveChangesAsync();
 
@@ -219,20 +180,15 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var shoppingList = await _commonService.GetActiveShoppingList(shoppingListId);
-                if (shoppingList == null)
-                {
-                    return response.Unsuccessful("Shopping List not found.");
-                }
+                if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
-                if (newName.Length > 50)
-                {
-                    return response.Unsuccessful("Name cant be more than 50 characters.");
-                }
+                if (newName.Length > 50) return response.Unsuccessful("Name cant be more than 50 characters.");
 
                 shoppingList.Name = newName;
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists, shoppingList);
+                response.Data =
+                    await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists, shoppingList);
                 return response;
             }
             catch (Exception)
@@ -247,10 +203,7 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var shoppingList = await _commonService.GetActiveShoppingList(shoppingListId);
-                if (shoppingList == null)
-                {
-                    return response.Unsuccessful("Shopping List not found.");
-                }
+                if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
                 var memberList = await _dbContext.UserShoppingLists.Active()
                     .Where(sl => sl.ShoppingList == shoppingList)
@@ -275,10 +228,7 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var shoppingList = await _commonService.GetActiveShoppingList(shoppingListId);
-                if (shoppingList == null)
-                {
-                    return response.Unsuccessful("Shopping List not found.");
-                }
+                if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
                 var start = startDateTime.Date;
                 var end = endDateTime.Date.AddDays(1).AddTicks(-1);
@@ -307,6 +257,13 @@ namespace SharedShoppingList.Data.Services
             {
                 return response.Exception();
             }
+        }
+
+        private string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[_random.Next(s.Length)]).ToArray());
         }
     }
 }
