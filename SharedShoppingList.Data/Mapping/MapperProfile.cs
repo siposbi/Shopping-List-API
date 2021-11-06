@@ -8,7 +8,8 @@ namespace SharedShoppingList.Data.Mapping
     {
         public MapperProfile()
         {
-            CreateMap<Product, ProductDto>();
+            CreateMap<Product, ProductMinDto>()
+                .ForMember(dest => dest.IsBought, opt => opt.MapFrom(src => src.BoughtByUser != null));
             CreateMap<UserShoppingList, MemberDto>()
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
@@ -16,6 +17,7 @@ namespace SharedShoppingList.Data.Mapping
             CreateMap<ShoppingList, ShoppingListDto>()
                 .ForMember(dest => dest.NumberOfProducts, opt => opt.MapFrom(src => src.Products.Count))
                 .ForMember(dest => dest.IsShared, opt => opt.MapFrom(src => src.Users.Count > 1));
+            CreateMap<Product, ProductDto>();
         }
     }
 }

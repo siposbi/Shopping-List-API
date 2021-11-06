@@ -16,20 +16,11 @@ namespace SharedShoppingList.Api.Controllers
             _identityService = identityService;
         }
 
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            return Ok("HELLO");
-        }
-
         [HttpPost("login")]
         public async Task<ActionResult<ResponseModel<TokenModel>>> LoginAsync([FromBody] LoginModel loginModel)
         {
             var result = await _identityService.LoginAsync(loginModel);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -38,10 +29,7 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<long>>> RegisterAsync([FromBody] RegisterModel registerModel)
         {
             var result = await _identityService.RegisterAsync(registerModel);
-            if (result.IsSuccess)
-            {
-                return Created(result.Data.ToString(), result);
-            }
+            if (result.IsSuccess) return Created(result.Data.ToString(), result);
 
             return BadRequest(result);
         }
@@ -50,10 +38,7 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<TokenModel>>> Refresh([FromBody] TokenModel request)
         {
             var result = await _identityService.RefreshTokenAsync(request);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }

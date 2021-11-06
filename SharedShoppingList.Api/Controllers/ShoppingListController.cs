@@ -29,10 +29,7 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<IEnumerable<ShoppingListDto>>> GetShoppingListsForUser()
         {
             var result = await _shoppingListService.GetAllForUser(User.GetId());
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -41,10 +38,7 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<ShoppingListDto>>> CreateShoppingList([FromBody] string listName)
         {
             var result = await _shoppingListService.Create(User.GetId(), listName);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
@@ -53,27 +47,21 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<ShoppingListDto>>> Join([FromRoute] string shareCode)
         {
             var result = await _shoppingListService.Join(User.GetId(), shareCode);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
 
-        [HttpPut("leave/{listId:int}")]
+        [HttpPut("leave/{listId:long}")]
         public async Task<ActionResult<ResponseModel<bool>>> Leave([FromRoute] long listId)
         {
             var result = await _shoppingListService.Leave(User.GetId(), listId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
 
-        [HttpPut("rename/{listId:int}")]
+        [HttpPut("rename/{listId:long}")]
         public async Task<ActionResult<ResponseModel<ShoppingListDto>>> Rename([FromRoute] int listId,
             [FromBody] string newName)
         {
@@ -81,41 +69,32 @@ namespace SharedShoppingList.Api.Controllers
                 return Unauthorized("User is not part of list, so can't rename it.");
 
             var result = await _shoppingListService.Rename(listId, newName);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
 
-        [HttpGet("getMembers/{listId:int}")]
+        [HttpGet("getMembers/{listId:long}")]
         public async Task<ActionResult<ResponseModel<IEnumerable<MemberDto>>>> GetMembersOfList([FromRoute] int listId)
         {
             if (!await _userService.UserIsMemberOfList(listId, User.GetId()))
                 return Unauthorized("User is not part of list, so he can not see members.");
 
             var result = await _shoppingListService.GetMembers(listId);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }
 
-        [HttpGet("getExport/{listId:int}")]
+        [HttpGet("getExport/{listId:long}")]
         public async Task<ActionResult<ResponseModel<IEnumerable<ExportDto>>>> GetMembersOfList([FromRoute] int listId,
-            [FromQuery, Required] DateTime startDate, [FromQuery, Required] DateTime endDatetime)
+            [FromQuery] [Required] DateTime startDate, [FromQuery] [Required] DateTime endDatetime)
         {
             if (!await _userService.UserIsMemberOfList(listId, User.GetId()))
                 return Unauthorized("User is not part of list, so he can not see members.");
 
             var result = await _shoppingListService.Export(listId, startDate, endDatetime);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+            if (result.IsSuccess) return Ok(result);
 
             return BadRequest(result);
         }

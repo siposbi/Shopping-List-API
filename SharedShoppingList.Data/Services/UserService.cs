@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SharedShoppingList.Data;
 using SharedShoppingList.Data.Entities;
 using SharedShoppingList.Data.Extensions;
 
@@ -14,12 +13,12 @@ namespace SharedShoppingList.Data.Services
 
     public class UserService : IUserService
     {
+        private readonly ShoppingListDbContext _dbContext;
+
         public UserService(ShoppingListDbContext dbContext)
         {
             _dbContext = dbContext;
         }
-
-        private readonly ShoppingListDbContext _dbContext;
 
         public async Task<User> GetActiveUser(long userId)
         {

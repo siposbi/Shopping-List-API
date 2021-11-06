@@ -4,11 +4,10 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using SharedShoppingList.Data;
 using SharedShoppingList.Data.Entities;
 using SharedShoppingList.Data.Models;
 
@@ -23,8 +22,8 @@ namespace SharedShoppingList.Data.Services
 
     public class IdentityService : IIdentityService
     {
-        private readonly ShoppingListDbContext _context;
         private readonly ServiceConfiguration _appSettings;
+        private readonly ShoppingListDbContext _context;
 
         private readonly TokenValidationParameters _tokenValidationParameters;
 
@@ -43,25 +42,19 @@ namespace SharedShoppingList.Data.Services
             var response = new ResponseModel<TokenModel>();
             try
             {
-                var loginUser =
-                    await _context.Users.SingleOrDefaultAsync(
-                        c => c.Email == login.Email && c.Password == login.Password);
+                var loginUser = await _context.Users.SingleOrDefaultAsync(c => c.Email == login.Email);
 
-                if (loginUser == null)
-                {
+                if (loginUser == null) return response.Unsuccessful("Invalid Username or Password.");
+
+                if (!Crypto.VerifyHashedPassword(loginUser.Password, login.Password))
                     return response.Unsuccessful("Invalid Username or Password.");
-                }
-                
+
                 var authenticationResult = await AuthenticateAsync(loginUser);
                 if (authenticationResult is { Success: true })
-                {
                     response.Data = new TokenModel
                         { Token = authenticationResult.Token, RefreshToken = authenticationResult.RefreshToken };
-                }
                 else
-                {
                     return response.Unsuccessful("Something went wrong!");
-                }
 
                 return response;
             }
@@ -77,13 +70,11 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 if (await _context.Users.AnyAsync(u => u.Email == registerModel.Email))
-                {
                     return response.Unsuccessful("Email already registered!");
-                }
 
                 var user = new User
                 {
-                    Password = registerModel.Password,
+                    Password = Crypto.HashPassword(registerModel.Password),
                     Email = registerModel.Email,
                     FirstName = registerModel.FirstName,
                     LastName = registerModel.LastName
@@ -105,10 +96,7 @@ namespace SharedShoppingList.Data.Services
             try
             {
                 var authResponse = await GetRefreshTokenAsync(request.Token, request.RefreshToken);
-                if (!authResponse.Success)
-                {
-                    return response.Unsuccessful(string.Join(",", authResponse.Errors));
-                }
+                if (!authResponse.Success) return response.Unsuccessful(string.Join(",", authResponse.Errors));
 
                 var refreshTokenModel = new TokenModel
                 {
@@ -176,10 +164,7 @@ namespace SharedShoppingList.Data.Services
         {
             var validatedToken = GetPrincipalFromToken(token);
 
-            if (validatedToken == null)
-            {
-                return new AuthenticationResult { Errors = new[] { "Invalid Token" } };
-            }
+            if (validatedToken == null) return new AuthenticationResult { Errors = new[] { "Invalid Token" } };
 
             var expiryDateUnix =
                 long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
@@ -188,44 +173,31 @@ namespace SharedShoppingList.Data.Services
                 .AddSeconds(expiryDateUnix);
 
             if (expiryDateTimeUtc > DateTime.UtcNow)
-            {
                 return new AuthenticationResult { Errors = new[] { "This token hasn't expired yet" } };
-            }
 
             var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
 
             var storedRefreshToken = _context.RefreshTokens.FirstOrDefault(x => x.Token == refreshToken);
 
             if (storedRefreshToken == null)
-            {
                 return new AuthenticationResult { Errors = new[] { "This refresh token does not exist" } };
-            }
 
             if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
-            {
                 return new AuthenticationResult { Errors = new[] { "This refresh token has expired" } };
-            }
 
             if (storedRefreshToken.Used is true)
-            {
                 return new AuthenticationResult { Errors = new[] { "This refresh token has been used" } };
-            }
 
             if (storedRefreshToken.JwtId != jti)
-            {
                 return new AuthenticationResult { Errors = new[] { "This refresh token does not match this JWT" } };
-            }
 
             storedRefreshToken.Used = true;
             _context.RefreshTokens.Update(storedRefreshToken);
             await _context.SaveChangesAsync();
-            var strUserId = validatedToken.Claims.Single(x => x.Type == "UserId").Value;
+            var strUserId = validatedToken.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
             long.TryParse(strUserId, out var userId);
             var user = await _context.Users.SingleOrDefaultAsync(c => c.Id == userId);
-            if (user == null)
-            {
-                return new AuthenticationResult { Errors = new[] { "User Not Found" } };
-            }
+            if (user == null) return new AuthenticationResult { Errors = new[] { "User Not Found" } };
 
             return await AuthenticateAsync(user);
         }

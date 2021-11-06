@@ -10,8 +10,8 @@ using SharedShoppingList.Data;
 namespace SharedShoppingList.Data.Migrations
 {
     [DbContext(typeof(ShoppingListDbContext))]
-    [Migration("20211030143604_ToCloud")]
-    partial class ToCloud
+    [Migration("20211031080718_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

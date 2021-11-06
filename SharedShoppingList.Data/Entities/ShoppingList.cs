@@ -12,9 +12,9 @@ namespace SharedShoppingList.Data.Entities
         [Required] public DateTime LastEditedDateTime { get; set; } = DateTime.Now;
         [Required] public User CreatedByUser { get; set; }
         public string ShareCode { get; set; }
-        public bool IsActive { get; set; } = true;
-        
+
         public ICollection<UserShoppingList> Users { get; set; } = null!;
         public ICollection<Product> Products { get; set; } = null!;
+        public bool IsActive { get; set; } = true;
     }
 }
