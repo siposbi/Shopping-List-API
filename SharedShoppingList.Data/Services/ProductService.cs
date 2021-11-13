@@ -17,7 +17,7 @@ namespace SharedShoppingList.Data.Services
     {
         Task<ResponseModel<ProductMinDto>> Create(long userId, ProductCreateModel productModel);
         Task<ResponseModel<IEnumerable<ProductMinDto>>> GetEveryProductForList(long listId);
-        Task<ResponseModel<bool>> Delete(long productId);
+        Task<ResponseModel<long>> Delete(long productId);
         Task<ResponseModel<ProductMinDto>> UndoDelete(long productId);
         Task<ResponseModel<ProductMinDto>> Buy(long userId, long productId);
         Task<ResponseModel<ProductMinDto>> UndoBuy(long userId, long productId);
@@ -101,9 +101,9 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        public async Task<ResponseModel<bool>> Delete(long productId)
+        public async Task<ResponseModel<long>> Delete(long productId)
         {
-            var response = new ResponseModel<bool>();
+            var response = new ResponseModel<long>();
             try
             {
                 var product = await GetActiveProduct(productId);
@@ -115,7 +115,7 @@ namespace SharedShoppingList.Data.Services
                 product.IsActive = false;
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = true;
+                response.Data = productId;
                 return response;
             }
             catch (Exception)
