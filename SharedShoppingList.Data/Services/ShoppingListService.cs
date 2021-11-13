@@ -53,7 +53,7 @@ namespace SharedShoppingList.Data.Services
                 var user = await _userService.GetActiveUser(userId);
                 if (user == null) return response.Unsuccessful("User not found.");
 
-                if (shoppingListName.Length > 50) return response.Unsuccessful("Name cant be more than 50 characters.");
+                if (shoppingListName.Length > 20) return response.Unsuccessful("Name cant be more than 20 characters.");
 
                 var newShoppingList = new ShoppingList
                 {
@@ -182,7 +182,7 @@ namespace SharedShoppingList.Data.Services
                 var shoppingList = await _commonService.GetActiveShoppingList(shoppingListId);
                 if (shoppingList == null) return response.Unsuccessful("Shopping List not found.");
 
-                if (newName.Length > 50) return response.Unsuccessful("Name cant be more than 50 characters.");
+                if (newName.Length > 20) return response.Unsuccessful("Name cant be more than 20 characters.");
 
                 shoppingList.Name = newName;
                 await _dbContext.SaveChangesAsync();

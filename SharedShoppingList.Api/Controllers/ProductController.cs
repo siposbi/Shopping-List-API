@@ -46,8 +46,6 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<ProductMinDto>>> CreateProduct(
             [FromBody] ProductCreateModel productModel)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             if (!await _userService.UserIsMemberOfList(productModel.ShoppingListId, User.GetId()))
                 return Unauthorized("User is not part of list, so can't add product to it.");
 
@@ -136,8 +134,6 @@ namespace SharedShoppingList.Api.Controllers
         public async Task<ActionResult<ResponseModel<ProductMinDto>>> Update([FromRoute] long productId,
             [FromBody] ProductUpdateModel productModel)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var listId = await _productService.GetListIdForProduct(productId);
             if (listId == null)
             {
