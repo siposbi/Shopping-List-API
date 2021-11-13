@@ -18,7 +18,7 @@ namespace SharedShoppingList.Data.Services
         Task<ResponseModel<ShoppingListDto>> Create(long userId, string shoppingListName);
         Task<ResponseModel<IEnumerable<ShoppingListDto>>> GetAllForUser(long userId);
         Task<ResponseModel<ShoppingListDto>> Join(long userId, string shareCode);
-        Task<ResponseModel<bool>> Leave(long userId, long shoppingListId);
+        Task<ResponseModel<long>> Leave(long userId, long shoppingListId);
         Task<ResponseModel<ShoppingListDto>> Rename(long shoppingListId, string newName);
         Task<ResponseModel<IEnumerable<MemberDto>>> GetMembers(long shoppingListId);
 
@@ -141,9 +141,9 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        public async Task<ResponseModel<bool>> Leave(long userId, long shoppingListId)
+        public async Task<ResponseModel<long>> Leave(long userId, long shoppingListId)
         {
-            var response = new ResponseModel<bool>();
+            var response = new ResponseModel<long>();
             try
             {
                 var user = await _userService.GetActiveUser(userId);
@@ -165,7 +165,7 @@ namespace SharedShoppingList.Data.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = true;
+                response.Data = shoppingListId;
                 return response;
             }
             catch (Exception)

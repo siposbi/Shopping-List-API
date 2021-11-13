@@ -59,19 +59,19 @@ namespace SharedShoppingList.Api.Controllers
         }
 
         [HttpDelete("delete/{productId:long}")]
-        public async Task<ActionResult<ResponseModel<bool>>> Delete([FromRoute] long productId)
+        public async Task<ActionResult<ResponseModel<long>>> Delete([FromRoute] long productId)
         {
             var listId = await _productService.GetListIdForProduct(productId);
             if (listId == null)
             {
-                return Ok(new ResponseModel<bool>().Unsuccessful("Product does not exist."));
+                return Ok(new ResponseModel<long>().Unsuccessful("Product does not exist."));
             }
 
             if (!await _userService.UserIsMemberOfList(listId.Value, User.GetId()))
                 return Unauthorized("User is not part of list.");
             if (User.GetId() != await _productService.GetAddedByUserId(productId))
             {
-                return Ok(new ResponseModel<bool>().Unsuccessful("You cant delete a product added by someone else."));
+                return Ok(new ResponseModel<long>().Unsuccessful("You cant delete a product added by someone else."));
             }
 
             return Ok(await _productService.Delete(productId));

@@ -44,7 +44,7 @@ namespace SharedShoppingList.Api.Controllers
         }
 
         [HttpPut("leave/{listId:long}")]
-        public async Task<ActionResult<ResponseModel<bool>>> Leave([FromRoute] long listId)
+        public async Task<ActionResult<ResponseModel<long>>> Leave([FromRoute] long listId)
         {
             return Ok(await _shoppingListService.Leave(User.GetId(), listId));
         }
