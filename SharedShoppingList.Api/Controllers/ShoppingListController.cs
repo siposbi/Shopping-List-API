@@ -28,37 +28,25 @@ namespace SharedShoppingList.Api.Controllers
         [HttpGet("getAllForUser")]
         public async Task<ActionResult<IEnumerable<ShoppingListDto>>> GetShoppingListsForUser()
         {
-            var result = await _shoppingListService.GetAllForUser(User.GetId());
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _shoppingListService.GetAllForUser(User.GetId()));
         }
 
         [HttpPost("create")]
         public async Task<ActionResult<ResponseModel<ShoppingListDto>>> CreateShoppingList([FromBody] string listName)
         {
-            var result = await _shoppingListService.Create(User.GetId(), listName);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _shoppingListService.Create(User.GetId(), listName));
         }
 
         [HttpPut("join/{shareCode}")]
         public async Task<ActionResult<ResponseModel<ShoppingListDto>>> Join([FromRoute] string shareCode)
         {
-            var result = await _shoppingListService.Join(User.GetId(), shareCode);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _shoppingListService.Join(User.GetId(), shareCode));
         }
 
         [HttpPut("leave/{listId:long}")]
         public async Task<ActionResult<ResponseModel<bool>>> Leave([FromRoute] long listId)
         {
-            var result = await _shoppingListService.Leave(User.GetId(), listId);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _shoppingListService.Leave(User.GetId(), listId));
         }
 
         [HttpPut("rename/{listId:long}")]
@@ -68,10 +56,7 @@ namespace SharedShoppingList.Api.Controllers
             if (!await _userService.UserIsMemberOfList(listId, User.GetId()))
                 return Unauthorized("User is not part of list, so can't rename it.");
 
-            var result = await _shoppingListService.Rename(listId, newName);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _shoppingListService.Rename(listId, newName));
         }
 
         [HttpGet("getMembers/{listId:long}")]
@@ -80,10 +65,7 @@ namespace SharedShoppingList.Api.Controllers
             if (!await _userService.UserIsMemberOfList(listId, User.GetId()))
                 return Unauthorized("User is not part of list, so he can not see members.");
 
-            var result = await _shoppingListService.GetMembers(listId);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _shoppingListService.GetMembers(listId));
         }
 
         [HttpGet("getExport/{listId:long}")]
@@ -93,10 +75,7 @@ namespace SharedShoppingList.Api.Controllers
             if (!await _userService.UserIsMemberOfList(listId, User.GetId()))
                 return Unauthorized("User is not part of list, so he can not see members.");
 
-            var result = await _shoppingListService.Export(listId, startDate, endDatetime);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _shoppingListService.Export(listId, startDate, endDatetime));
         }
     }
 }
