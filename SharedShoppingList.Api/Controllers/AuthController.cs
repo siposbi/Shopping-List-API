@@ -19,28 +19,19 @@ namespace SharedShoppingList.Api.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<ResponseModel<TokenModel>>> LoginAsync([FromBody] LoginModel loginModel)
         {
-            var result = await _identityService.LoginAsync(loginModel);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _identityService.LoginAsync(loginModel));
         }
 
         [HttpPost("register")]
         public async Task<ActionResult<ResponseModel<long>>> RegisterAsync([FromBody] RegisterModel registerModel)
         {
-            var result = await _identityService.RegisterAsync(registerModel);
-            if (result.IsSuccess) return Created(result.Data.ToString(), result);
-
-            return BadRequest(result);
+            return Ok(await _identityService.RegisterAsync(registerModel));
         }
 
         [HttpPost("refresh")]
         public async Task<ActionResult<ResponseModel<TokenModel>>> Refresh([FromBody] TokenModel request)
         {
-            var result = await _identityService.RefreshTokenAsync(request);
-            if (result.IsSuccess) return Ok(result);
-
-            return BadRequest(result);
+            return Ok(await _identityService.RefreshTokenAsync(request));
         }
     }
 }
