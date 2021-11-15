@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using SharedShoppingList.Data.Dto;
 using SharedShoppingList.Data.Entities;
+using SharedShoppingList.Data.Extensions;
 
 namespace SharedShoppingList.Data.Mapping
 {
@@ -16,7 +18,7 @@ namespace SharedShoppingList.Data.Mapping
                 .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => src.ShoppingList.CreatedByUser == src.User));
             CreateMap<ShoppingList, ShoppingListDto>()
                 .ForMember(dest => dest.NumberOfProducts, opt => opt.MapFrom(src => src.Products.Count))
-                .ForMember(dest => dest.IsShared, opt => opt.MapFrom(src => src.Users.Count > 1));
+                .ForMember(dest => dest.IsShared, opt => opt.MapFrom(src => src.Users.Active().Count() > 1));
             CreateMap<Product, ProductDto>();
         }
     }

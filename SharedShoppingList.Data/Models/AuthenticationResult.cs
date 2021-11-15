@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SharedShoppingList.Data.Models
 {
@@ -6,6 +7,8 @@ namespace SharedShoppingList.Data.Models
     {
         public string Token { get; set; }
         public string RefreshToken { get; set; }
+        public DateTime TokenValidUntil { get; set; }
+        public DateTime RefreshTokenValidUntil { get; set; }
     }
 
     public class AuthenticationResult : TokenModel

@@ -9,7 +9,7 @@ namespace SharedShoppingList.Data.Design
     {
         public ShoppingListDbContext CreateDbContext(string[] args)
         {
-            return new(new Logger<ShoppingListDbContext>(new LoggerFactory()),
+            return new ShoppingListDbContext(new Logger<ShoppingListDbContext>(new LoggerFactory()),
                 new DbContextOptionsBuilder<ShoppingListDbContext>()
                     .UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ShoppingList").Options);
         }
