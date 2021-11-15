@@ -11,6 +11,7 @@ namespace SharedShoppingList.Data.Extensions
         {
             return dbSet.Where(o => o.IsActive);
         }
+
         public static IEnumerable<T> Active<T>(this IEnumerable<T> dbSet) where T : class, ISoftDeletable
         {
             return dbSet.Where(o => o.IsActive);
