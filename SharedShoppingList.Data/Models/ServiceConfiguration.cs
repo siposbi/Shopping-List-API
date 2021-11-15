@@ -10,5 +10,6 @@
         public string Secret { get; set; }
 
         public int TokenLifetimeInDays { get; set; }
+        public int RefreshTokenLifetimeInDays { get; set; }
     }
 }

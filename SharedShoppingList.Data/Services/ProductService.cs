@@ -19,7 +19,7 @@ namespace SharedShoppingList.Data.Services
         Task<ResponseModel<IEnumerable<ProductMinDto>>> GetEveryProductForList(long listId);
         Task<ResponseModel<long>> Delete(long productId);
         Task<ResponseModel<ProductMinDto>> UndoDelete(long productId);
-        Task<ResponseModel<ProductMinDto>> Buy(long userId, long productId);
+        Task<ResponseModel<ProductMinDto>> Buy(long userId, long productId, long price);
         Task<ResponseModel<ProductMinDto>> UndoBuy(long userId, long productId);
         Task<long?> GetListIdForProduct(long productId);
         Task<ResponseModel<ProductMinDto>> Update(long productId, ProductUpdateModel productModel);
@@ -144,11 +144,13 @@ namespace SharedShoppingList.Data.Services
             }
         }
 
-        public async Task<ResponseModel<ProductMinDto>> Buy(long userId, long productId)
+        public async Task<ResponseModel<ProductMinDto>> Buy(long userId, long productId, long price)
         {
             var response = new ResponseModel<ProductMinDto>();
             try
             {
+                if (price < 0) return response.Unsuccessful($"Invalid price {price}");
+
                 var user = await _userService.GetActiveUser(userId);
                 if (user == null) return response.Unsuccessful("User not found.");
 
@@ -159,6 +161,7 @@ namespace SharedShoppingList.Data.Services
 
                 product.BoughtByUser = user;
                 product.BoughtDateTime = DateTime.Now;
+                product.Price = price;
                 await _dbContext.SaveChangesAsync();
 
                 response.Data = _mapper.Map<ProductMinDto>(product);

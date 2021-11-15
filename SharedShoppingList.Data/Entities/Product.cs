@@ -7,7 +7,7 @@ namespace SharedShoppingList.Data.Entities
     {
         [Key] public long Id { get; set; }
         [Required] public User AddedByUser { get; set; }
-        public User BoughtByUser { get; set; }
+        public User? BoughtByUser { get; set; }
         [Required] public DateTime CreatedDateTime { get; set; }
         public DateTime? BoughtDateTime { get; set; }
         [MaxLength(30)] [Required] public string Name { get; set; }

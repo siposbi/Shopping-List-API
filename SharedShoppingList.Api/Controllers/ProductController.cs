@@ -93,9 +93,10 @@ namespace SharedShoppingList.Api.Controllers
         }
 
         [HttpPut("buy/{productId:long}")]
-        public async Task<ActionResult<ResponseModel<ProductMinDto>>> Buy([FromRoute] long productId)
+        public async Task<ActionResult<ResponseModel<ProductMinDto>>> Buy([FromRoute] long productId,
+            [FromBody] long price)
         {
-            return Ok(await _productService.Buy(User.GetId(), productId));
+            return Ok(await _productService.Buy(User.GetId(), productId, price));
         }
 
         [HttpPut("undoBuy/{productId:long}")]

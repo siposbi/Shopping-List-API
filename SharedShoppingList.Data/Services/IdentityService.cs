@@ -52,7 +52,13 @@ namespace SharedShoppingList.Data.Services
                 var authenticationResult = await AuthenticateAsync(loginUser);
                 if (authenticationResult is { Success: true })
                     response.Data = new TokenModel
-                        { Token = authenticationResult.Token, RefreshToken = authenticationResult.RefreshToken };
+                    {
+                        Token = authenticationResult.Token,
+                        RefreshToken = authenticationResult.RefreshToken,
+                        TokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
+                        RefreshTokenValidUntil =
+                            DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
+                    };
                 else
                     return response.Unsuccessful("Something went wrong!");
 
@@ -101,7 +107,10 @@ namespace SharedShoppingList.Data.Services
                 var refreshTokenModel = new TokenModel
                 {
                     Token = authResponse.Token,
-                    RefreshToken = authResponse.RefreshToken
+                    RefreshToken = authResponse.RefreshToken,
+                    TokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
+                    RefreshTokenValidUntil =
+                        DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
                 };
                 response.Data = refreshTokenModel;
                 return response;
@@ -146,7 +155,7 @@ namespace SharedShoppingList.Data.Services
                     JwtId = token.Id,
                     UserId = user.Id,
                     CreationDate = DateTime.UtcNow,
-                    ExpiryDate = DateTime.UtcNow.AddMonths(1)
+                    ExpiryDate = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
                 };
                 await _context.RefreshTokens.AddAsync(refreshToken);
                 await _context.SaveChangesAsync();
