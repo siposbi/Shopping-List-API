@@ -71,9 +71,8 @@ namespace SharedShoppingList.Data.Services
                 newShoppingList.ShareCode =
                     $"SSLU{userId.ToString().PadLeft(5, '0')}L{newShoppingList.Id.ToString().PadLeft(5, '0')}R{RandomString(5)}";
                 await _dbContext.SaveChangesAsync();
-                response.Data =
-                    await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists,
-                        newShoppingList);
+                response.Data = await ToDto(newShoppingList);
+
                 return response;
             }
             catch (Exception)
@@ -92,19 +91,17 @@ namespace SharedShoppingList.Data.Services
 
                 var shoppingLists = await _dbContext.UserShoppingLists.Active()
                     .Where(sl => sl.UserId == userId)
-                    .Include(usl => usl.ShoppingList.Products)
+                    .OrderByDescending(usl => usl.JoinDateTime)
                     .Select(usl => usl.ShoppingList)
                     .ProjectTo<ShoppingListDto>(_mapper.ConfigurationProvider)
                     .ToListAsync();
 
                 foreach (var shoppingList in shoppingLists)
                 {
-                    shoppingList.LastProductAddedDateTime =
-                        await _dbContext.Products.Where(p => p.ShoppingList.Id == shoppingList.Id)
-                            .Select(p => p.CreatedDateTime).DefaultIfEmpty().MaxAsync();
+                    shoppingList.LastProductAddedDateTime = await LastProductAdded(shoppingList.Id);
                 }
 
-                response.Data = shoppingLists.OrderByDescending(sl => sl.LastProductAddedDateTime);
+                response.Data = shoppingLists;
                 return response;
             }
             catch (Exception)
@@ -132,15 +129,19 @@ namespace SharedShoppingList.Data.Services
                 var usl = await _dbContext.UserShoppingLists.SingleOrDefaultAsync(usl =>
                     usl.User == user && usl.ShoppingList == shoppingList);
                 if (usl == null)
+                {
                     await _dbContext.UserShoppingLists.AddAsync(new UserShoppingList
                         { User = user, ShoppingList = shoppingList });
+                }
                 else
+                {
                     usl.IsActive = true;
+                    usl.JoinDateTime = DateTime.Now;
+                }
 
                 await _dbContext.SaveChangesAsync();
 
-                response.Data =
-                    await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists, shoppingList);
+                response.Data = await ToDto(shoppingList);
                 return response;
             }
             catch (Exception)
@@ -195,8 +196,7 @@ namespace SharedShoppingList.Data.Services
                 shoppingList.Name = newName;
                 await _dbContext.SaveChangesAsync();
 
-                response.Data =
-                    await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists, shoppingList);
+                response.Data = await ToDto(shoppingList);
                 return response;
             }
             catch (Exception)
@@ -272,6 +272,21 @@ namespace SharedShoppingList.Data.Services
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[_random.Next(s.Length)]).ToArray());
+        }
+
+        private async Task<ShoppingListDto> ToDto(ShoppingList shoppingList)
+        {
+            var mapped = await _mapper.ProjectToAsync<ShoppingList, ShoppingListDto>(_dbContext.ShoppingLists,
+                shoppingList);
+            mapped.LastProductAddedDateTime = await LastProductAdded(shoppingList.Id);
+
+            return mapped;
+        }
+
+        private async Task<DateTime> LastProductAdded(long shoppingListId)
+        {
+            return await _dbContext.Products.Where(p => p.ShoppingList.Id == shoppingListId)
+                .Select(p => p.CreatedDateTime).DefaultIfEmpty().MaxAsync();
         }
     }
 }
