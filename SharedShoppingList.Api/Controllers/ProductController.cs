@@ -24,7 +24,7 @@ namespace SharedShoppingList.Api.Controllers
         }
 
         [HttpGet("{id:long}")]
-        public async Task<ActionResult<ResponseModel<ProductMinDto>>> GetOne([FromRoute] long id)
+        public async Task<ActionResult<ResponseModel<ProductDto>>> GetOne([FromRoute] long id)
         {
             var listId = await _productService.GetListIdForProduct(id);
             if (listId == null) return Ok(new ResponseModel<bool>().Unsuccessful("Product does not exist."));
