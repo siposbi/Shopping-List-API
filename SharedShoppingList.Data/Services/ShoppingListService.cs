@@ -92,11 +92,19 @@ namespace SharedShoppingList.Data.Services
 
                 var shoppingLists = await _dbContext.UserShoppingLists.Active()
                     .Where(sl => sl.UserId == userId)
+                    .Include(usl => usl.ShoppingList.Products)
                     .Select(usl => usl.ShoppingList)
-                    .OrderByDescending(sl => sl.LastEditedDateTime)
                     .ProjectTo<ShoppingListDto>(_mapper.ConfigurationProvider)
                     .ToListAsync();
-                response.Data = shoppingLists;
+
+                foreach (var shoppingList in shoppingLists)
+                {
+                    shoppingList.LastProductAddedDateTime =
+                        await _dbContext.Products.Where(p => p.ShoppingList.Id == shoppingList.Id)
+                            .Select(p => p.CreatedDateTime).DefaultIfEmpty().MaxAsync();
+                }
+
+                response.Data = shoppingLists.OrderByDescending(sl => sl.LastProductAddedDateTime);
                 return response;
             }
             catch (Exception)

@@ -9,7 +9,6 @@ namespace SharedShoppingList.Data.Entities
         [Key] public long Id { get; set; }
         [MaxLength(20)] [Required] public string Name { get; set; }
         [Required] public DateTime CreatedDateTime { get; set; } = DateTime.Now;
-        [Required] public DateTime LastEditedDateTime { get; set; } = DateTime.Now;
         [Required] public User CreatedByUser { get; set; }
         public string ShareCode { get; set; }
 
