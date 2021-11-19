@@ -17,7 +17,7 @@ namespace SharedShoppingList.Data.Mapping
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
                 .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => src.ShoppingList.CreatedByUser == src.User));
             CreateMap<ShoppingList, ShoppingListDto>()
-                .ForMember(dest => dest.NumberOfProducts, opt => opt.MapFrom(src => src.Products.Count))
+                .ForMember(dest => dest.NumberOfProducts, opt => opt.MapFrom(src => src.Products.Active().Count()))
                 .ForMember(dest => dest.IsShared, opt => opt.MapFrom(src => src.Users.Active().Count() > 1));
             CreateMap<Product, ProductDto>();
         }
