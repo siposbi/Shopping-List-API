@@ -22,7 +22,7 @@ namespace SharedShoppingList.Data.Services
         Task<ResponseModel<ShoppingListDto>> Rename(long shoppingListId, string newName);
         Task<ResponseModel<IEnumerable<MemberDto>>> GetMembers(long shoppingListId);
 
-        Task<ResponseModel<IEnumerable<ExportDto>>> Export(long shoppingListId, DateTime startDateTime,
+        Task<ResponseModel<IEnumerable<ExportDto>>> Export(int shoppingListId, DateTime startDateTime,
             DateTime endDateTime);
     }
 
@@ -69,6 +69,7 @@ namespace SharedShoppingList.Data.Services
                 await _dbContext.AddAsync(newUserShoppingList);
                 await _dbContext.SaveChangesAsync();
                 newShoppingList.ShareCode =
+                    // ReSharper disable once StringLiteralTypo
                     $"SSLU{userId.ToString().PadLeft(5, '0')}L{newShoppingList.Id.ToString().PadLeft(5, '0')}R{RandomString(5)}";
                 await _dbContext.SaveChangesAsync();
                 response.Data = await ToDto(newShoppingList);
@@ -165,6 +166,12 @@ namespace SharedShoppingList.Data.Services
                     .SingleOrDefaultAsync(usl => usl.ShoppingList == shoppingList && usl.User == user);
                 if (userShoppingList == null) return response.Unsuccessful("User is not member of this list.");
 
+                foreach (var product in _dbContext.Products.Where(p =>
+                    p.AddedByUser == user && p.ShoppingList == shoppingList))
+                {
+                    product.IsActive = false;
+                }
+
                 userShoppingList.IsActive = false;
                 await _dbContext.SaveChangesAsync();
 
@@ -229,7 +236,7 @@ namespace SharedShoppingList.Data.Services
         }
 
         // TODO finish this mess
-        public async Task<ResponseModel<IEnumerable<ExportDto>>> Export(long shoppingListId, DateTime startDateTime,
+        public async Task<ResponseModel<IEnumerable<ExportDto>>> Export(int shoppingListId, DateTime startDateTime,
             DateTime endDateTime)
         {
             var response = new ResponseModel<IEnumerable<ExportDto>>();
@@ -241,24 +248,43 @@ namespace SharedShoppingList.Data.Services
                 var start = startDateTime.Date;
                 var end = endDateTime.Date.AddDays(1).AddTicks(-1);
 
-                // TODO: Megnézni, hogy mennyi értékben vettek meg neki dolgokat és, hogy mennyi értékben vett meg ő dolgokat, ami nem az övé
-                // foglalkozni azzal, hogy a termékeke lehetnek közösek is
+                var exports = new List<ExportDto>();
 
-                var exportDtoList = await _dbContext.UserShoppingLists.Active()
-                    .Where(sl => sl.ShoppingList == shoppingList)
-                    .Select(sl => new ExportDto(sl.User.FirstName, sl.User.LastName,
-                        // Products, that he added, and others have bought
-                        _dbContext.Products.Active().BoughtBetween(start, end).Where(p =>
-                                p.AddedByUser == sl.User && p.BoughtByUser != null && p.BoughtByUser != sl.User)
-                            .Sum(p => p.Price)
-                        -
-                        // Products, that he bought for others
-                        _dbContext.Products.Active().BoughtBetween(start, end)
-                            .Where(p => p.BoughtByUser == sl.User && p.AddedByUser != sl.User).Sum(p => p.Price)
-                    )).ToListAsync();
-                // TODO use mapper
-                var exportDtoListOrdered = exportDtoList.OrderBy(m => m.FirstName);
-                response.Data = exportDtoListOrdered;
+                var productsPurchasedBetweenDate = _dbContext.Products.Active()
+                    .Where(p => p.ShoppingList == shoppingList)
+                    .BoughtBetween(start, end);
+                var users = _dbContext.ShoppingLists.Active().Include(sl => sl.Users).ThenInclude(usl => usl.User)
+                    .Single(sl => sl == shoppingList).Users.Active().Select(usl => usl.User).ToList();
+                foreach (var user in users)
+                {
+                    var moneyHeSpentOnOthers = productsPurchasedBetweenDate.Where(p => !p.IsShared)
+                        .Where(p => p.BoughtByUser == user && p.AddedByUser != user).Sum(p => p.Price);
+                    var moneyOthersSpentOnHim = productsPurchasedBetweenDate.Where(p => !p.IsShared)
+                        .Where(p => p.BoughtByUser != user && p.AddedByUser == user).Sum(p => p.Price);
+
+                    var sharedItemsHeAddedButDidntBuy = productsPurchasedBetweenDate.Where(p => p.IsShared)
+                        .Where(p => p.BoughtByUser != user && p.AddedByUser == user).Sum(p => p.Price);
+                    var sharedItemsHeBoughtButDidntAdd = productsPurchasedBetweenDate.Where(p => p.IsShared)
+                        .Where(p => p.BoughtByUser == user && p.AddedByUser != user).Sum(p => p.Price);
+                    var sharedItemsHeAddedAndBought = productsPurchasedBetweenDate.Where(p => p.IsShared)
+                        .Where(p => p.BoughtByUser == user && p.AddedByUser == user).Sum(p => p.Price);
+                    var sharedItemsOthersAddedAndBought = productsPurchasedBetweenDate.Where(p => p.IsShared)
+                        .Where(p => p.BoughtByUser != user && p.AddedByUser != user).Sum(p => p.Price);
+
+                    var moneySpent = moneyHeSpentOnOthers +
+                                     sharedItemsHeBoughtButDidntAdd / users.Count * (users.Count - 1) +
+                                     sharedItemsHeAddedAndBought / users.Count * (users.Count - 1);
+                    var moneySpentOnHim = sharedItemsHeAddedButDidntBuy / users.Count +
+                                          sharedItemsOthersAddedAndBought / users.Count +
+                                          moneyOthersSpentOnHim;
+                    exports.Add(new ExportDto
+                    {
+                        UserId = user.Id, FirstName = user.FirstName, LastName = user.LastName,
+                        Money = moneySpent - moneySpentOnHim
+                    });
+                }
+
+                response.Data = exports.OrderBy(m => m.FirstName);
                 return response;
             }
             catch (Exception)

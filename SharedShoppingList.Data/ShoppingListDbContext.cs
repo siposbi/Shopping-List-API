@@ -1,12 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SharedShoppingList.Data.Entities;
 
 namespace SharedShoppingList.Data
 {
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     public class ShoppingListDbContext : DbContext
     {
         public ShoppingListDbContext(ILogger<ShoppingListDbContext> logger,
