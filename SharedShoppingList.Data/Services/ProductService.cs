@@ -164,7 +164,7 @@ namespace SharedShoppingList.Data.Services
                 product.Price = price;
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = _mapper.Map<ProductMinDto>(product);
+                response.Data = await _mapper.ProjectToAsync<Product, ProductMinDto>(_dbContext.Products, product);
                 return response;
             }
             catch (Exception)
