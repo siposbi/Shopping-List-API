@@ -56,7 +56,8 @@ namespace SharedShoppingList.Data.Services
                         Token = authenticationResult.Token,
                         RefreshToken = authenticationResult.RefreshToken,
                         TokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
-                        RefreshTokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
+                        RefreshTokenValidUntil =
+                            DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
                     };
                 else
                     return response.Unsuccessful("Something went wrong!");
@@ -108,7 +109,8 @@ namespace SharedShoppingList.Data.Services
                     Token = authResponse.Token,
                     RefreshToken = authResponse.RefreshToken,
                     TokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
-                    RefreshTokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
+                    RefreshTokenValidUntil =
+                        DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
                 };
                 response.Data = refreshTokenModel;
                 return response;

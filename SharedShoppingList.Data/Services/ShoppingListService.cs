@@ -98,9 +98,7 @@ namespace SharedShoppingList.Data.Services
                     .ToListAsync();
 
                 foreach (var shoppingList in shoppingLists)
-                {
                     shoppingList.LastProductAddedDateTime = await LastProductAdded(shoppingList.Id);
-                }
 
                 response.Data = shoppingLists;
                 return response;
@@ -168,9 +166,7 @@ namespace SharedShoppingList.Data.Services
 
                 foreach (var product in _dbContext.Products.Where(p =>
                     p.AddedByUser == user && p.ShoppingList == shoppingList))
-                {
                     product.IsActive = false;
-                }
 
                 userShoppingList.IsActive = false;
                 await _dbContext.SaveChangesAsync();
