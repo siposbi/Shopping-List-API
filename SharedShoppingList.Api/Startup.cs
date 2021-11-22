@@ -43,7 +43,8 @@ namespace SharedShoppingList.Api
                 {
                     Version = "v1",
                     Title = "SharedShoppingList.Api",
-                    Description = "Backend service for a shared shopping list, security is based on JWT tokens, with refresh tokens implemented."
+                    Description =
+                        "Backend service for a shared shopping list, security is based on JWT tokens, with refresh tokens implemented."
                 });
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {

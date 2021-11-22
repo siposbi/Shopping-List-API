@@ -11,7 +11,6 @@ namespace SharedShoppingList.Data.Entities
         public DateTime ExpiryDate { get; set; }
         public bool? Used { get; set; }
         public long UserId { get; set; }
-
-        public virtual User User { get; set; }
+        public User User { get; set; }
     }
 }
