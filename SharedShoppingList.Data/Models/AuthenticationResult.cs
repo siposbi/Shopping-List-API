@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using SharedShoppingList.Data.Extensions;
 
 namespace SharedShoppingList.Data.Models
 {
@@ -7,7 +9,11 @@ namespace SharedShoppingList.Data.Models
     {
         public string Token { get; set; }
         public string RefreshToken { get; set; }
+
+        [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime TokenValidUntil { get; set; }
+
+        [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime RefreshTokenValidUntil { get; set; }
     }
 

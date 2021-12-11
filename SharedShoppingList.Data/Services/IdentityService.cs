@@ -55,8 +55,9 @@ namespace SharedShoppingList.Data.Services
                     {
                         Token = authenticationResult.Token,
                         RefreshToken = authenticationResult.RefreshToken,
-                        TokenValidUntil = DateTime.Now.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
-                        RefreshTokenValidUntil = DateTime.Now.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
+                        TokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
+                        RefreshTokenValidUntil =
+                            DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
                     };
                 else
                     return response.Unsuccessful("Something went wrong!");
@@ -107,8 +108,9 @@ namespace SharedShoppingList.Data.Services
                 {
                     Token = authResponse.Token,
                     RefreshToken = authResponse.RefreshToken,
-                    TokenValidUntil = DateTime.Now.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
-                    RefreshTokenValidUntil = DateTime.Now.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
+                    TokenValidUntil = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
+                    RefreshTokenValidUntil =
+                        DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
                 };
                 response.Data = refreshTokenModel;
                 return response;
@@ -138,7 +140,7 @@ namespace SharedShoppingList.Data.Services
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = subject,
-                    Expires = DateTime.Now.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
+                    Expires = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.TokenLifetimeInDays),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                         SecurityAlgorithms.HmacSha256Signature)
                 };
@@ -153,7 +155,7 @@ namespace SharedShoppingList.Data.Services
                     JwtId = token.Id,
                     UserId = user.Id,
                     CreationDate = DateTime.Now,
-                    ExpiryDate = DateTime.Now.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
+                    ExpiryDate = DateTime.UtcNow.AddDays(_appSettings.JwtSettings.RefreshTokenLifetimeInDays)
                 };
                 await _context.RefreshTokens.AddAsync(refreshToken);
                 await _context.SaveChangesAsync();
