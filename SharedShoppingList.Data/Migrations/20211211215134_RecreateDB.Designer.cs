@@ -10,8 +10,8 @@ using SharedShoppingList.Data;
 namespace SharedShoppingList.Data.Migrations
 {
     [DbContext(typeof(ShoppingListDbContext))]
-    [Migration("20211115082512_NewTokenModel")]
-    partial class NewTokenModel
+    [Migration("20211211215134_RecreateDB")]
+    partial class RecreateDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
