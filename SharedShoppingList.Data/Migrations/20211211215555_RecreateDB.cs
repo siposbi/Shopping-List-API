@@ -56,7 +56,6 @@ namespace SharedShoppingList.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     CreatedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastEditedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedByUserId = table.Column<long>(type: "bigint", nullable: true),
                     ShareCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)

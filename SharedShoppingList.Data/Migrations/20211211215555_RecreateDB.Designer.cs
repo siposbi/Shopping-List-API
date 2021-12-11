@@ -10,7 +10,7 @@ using SharedShoppingList.Data;
 namespace SharedShoppingList.Data.Migrations
 {
     [DbContext(typeof(ShoppingListDbContext))]
-    [Migration("20211211215134_RecreateDB")]
+    [Migration("20211211215555_RecreateDB")]
     partial class RecreateDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -115,9 +115,6 @@ namespace SharedShoppingList.Data.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastEditedDateTime")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
